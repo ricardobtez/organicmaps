@@ -173,6 +173,38 @@ packages only when building it:
 To enable the sandbox again in an existing build directory, configure with
 `-DBUILD_DEV_SANDBOX=ON` and build the `dev_sandbox` target.
 
+#### Conan-managed dependencies (optional)
+
+Instead of installing the non-Qt system packages listed above, you can pull them
+from [Conan Center](https://conan.io/center) with [Conan 2](https://docs.conan.io/2/).
+This leverages the `-DWITH_SYSTEM_PROVIDED_3PARTY=ON` CMake switch, which replaces
+the vendored `3party/` copies of ICU, FreeType, Harfbuzz, gflags, expat, pugixml,
+utf8cpp, Boost and zlib with `find_package()` calls.
+
+Qt6 and OpenGL are not available on Conan Center and must still come from the
+system (e.g. `qt6-base-dev`, `qt6-positioning-dev`, `libqt6svg6-dev`).
+
+Install Conan and create a default profile (once):
+
+```bash
+uv tool install conan
+conan profile detect
+```
+
+Install the dependencies and configure the project against them:
+
+```bash
+conan install . --build=missing            # add -o with_tests=True for GTest
+cmake --preset conan-release \
+  -DWITH_SYSTEM_PROVIDED_3PARTY=ON \
+  -DBUILD_TESTING=OFF -DBUILD_DEV_SANDBOX=OFF
+cmake --build --preset conan-release --target desktop
+```
+
+`conan install` writes its CMake presets into `CMakeUserPresets.json`, which
+CMake picks up automatically. Debug builds use `conan-release` with
+`-DCMAKE_BUILD_TYPE=Debug` or a `--settings build_type=Debug` Conan install.
+
 #### Note: Homebrew (Linuxbrew) Qt6 on Linux with NVIDIA
 
 Installing Qt6 via Homebrew (Linuxbrew) on a Linux machine that uses the
