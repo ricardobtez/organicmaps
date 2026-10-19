@@ -1,0 +1,33 @@
+name: Conan dependencies check
+on:
+  workflow_dispatch: # Manual trigger
+  pull_request:
+    paths:
+      - conanfile.py
+      - .github/workflows/conan-check.yaml  # Run check on self change
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conan-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      - name: Install Conan
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install conan
+          conan profile detect --force
+
+      # Downloading prebuilt binaries is usually enough; recipes without a
+      # prebuilt package for this configuration are skipped via --build=never so
+      # the check stays fast. If a recipe needs compiling, the install step with
+      # --build=missing below exercises it.
+      - name: Conan install (with tests)
+        run: conan install . -o with_tests=True --build=missing
