@@ -214,8 +214,17 @@ if (WITH_SYSTEM_PROVIDED_3PARTY)
   find_package(expat CONFIG REQUIRED)
 
   find_package(pugixml REQUIRED)
+  # Consumers link the unqualified 'pugixml' target that the vendored 3party
+  # build defines; alias the Conan-provided namespaced target for them.
+  if (NOT TARGET pugixml)
+    add_library(pugixml ALIAS pugixml::pugixml)
+  endif()
   find_package(utf8cpp REQUIRED)
   find_package(FastFloat CONFIG REQUIRED)
+  find_package(VulkanHeaders CONFIG REQUIRED)
+  if (NOT TARGET Vulkan::Headers)
+    add_library(Vulkan::Headers ALIAS vulkan-headers::vulkan-headers)
+  endif()
   find_package(Boost REQUIRED)
   if (BUILD_TESTING)
     find_package(GTest REQUIRED)
