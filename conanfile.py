@@ -16,7 +16,8 @@ class OrganicMapsDeps(ConanFile):
         "with_tests": False,
         "boost/*:header_only": True,
         "gtest/*:shared": False,
-        "harfbuzz/*:with_icu": True,
+        # The vendored 3party harfbuzz builds with HAVE_ICU disabled; match it.
+        "harfbuzz/*:with_icu": False,
         "harfbuzz/*:with_freetype": True,
         "freetype/*:shared": False,
         "icu/*:shared": False,
