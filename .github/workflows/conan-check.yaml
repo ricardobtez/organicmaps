@@ -12,12 +12,32 @@ concurrency:
 
 jobs:
   conan-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
       - name: Checkout sources
         uses: actions/checkout@v6
+        with:
+          # version.sh counts commits in its 128-commit history window.
+          fetch-depth: 128
+
+      - name: Parallel submodules checkout
+        run: git submodule update --depth 1 --init --recursive --jobs=20
+
+      # Conan provides the WITH_SYSTEM_PROVIDED_3PARTY dependencies; Qt6 and
+      # OpenGL are not on Conan Center and come from the system (as in build-cmake.yaml).
+      - name: Install system build tools and Qt6
+        run: |
+          sudo apt update -y
+          sudo apt install -y \
+              libgl1-mesa-dev \
+              libglvnd-dev \
+              libqt6svg6-dev \
+              ninja-build \
+              python3 \
+              qt6-base-dev \
+              qt6-positioning-dev \
 
       - name: Install Conan
         run: |
@@ -25,9 +45,38 @@ jobs:
           python3 -m pip install conan
           conan profile detect --force
 
-      # Downloading prebuilt binaries is usually enough; recipes without a
-      # prebuilt package for this configuration are skipped via --build=never so
-      # the check stays fast. If a recipe needs compiling, the install step with
-      # --build=missing below exercises it.
-      - name: Conan install (with tests)
+      - name: Conan install
         run: conan install . -o with_tests=True --build=missing
+
+      - name: Configure cmake
+        run: |
+          cmake --preset conan-release \
+            -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
+            -DWITH_SYSTEM_PROVIDED_3PARTY=ON \
+            -DBUILD_DEV_SANDBOX=OFF
+
+      - name: Compile
+        run: cmake --build --preset conan-release --target desktop
+
+      - name: Compile tests
+        run: cmake --build --preset conan-release
+
+      - name: Prepare testing environment
+        run: |
+          sudo locale-gen en_US
+          sudo locale-gen en_US.UTF-8
+          sudo locale-gen es_ES
+          sudo locale-gen es_ES.UTF-8
+          sudo locale-gen fr_FR
+          sudo locale-gen fr_FR.UTF-8
+          sudo locale-gen ru_RU
+          sudo locale-gen ru_RU.UTF-8
+          sudo update-locale
+
+      # Mirrors the "ci" test preset filter from CMakePresets.json: run the
+      # omim-test suites that don't need offscreen GL or external resources.
+      - name: Run tests
+        run: |
+          ctest --test-dir build/Release -L "omim-test" \
+            -E "drape_tests|drape_frontend_tests|generator_integration_tests|routing_benchmarks|routing_integration_tests|routing_quality_tests|search_quality_tests|storage_integration_tests|shaders_tests" \
+            --output-on-failure -j$(nproc --all)
