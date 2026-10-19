@@ -125,6 +125,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC utf8cpp::utf8cpp)
 
 if (NOT WITH_SYSTEM_PROVIDED_3PARTY)
   target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE "${OMIM_ROOT}/3party/fast_float/include")
+else()
+  target_link_libraries(${PROJECT_NAME} PUBLIC FastFloat::fast_float)
 endif()
 
 omim_add_test_subdirectory(base_tests)

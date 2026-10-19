@@ -52,8 +52,10 @@ else()
   target_compile_options(gtest PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fno-finite-math-only>
     $<$<BOOL:${OMIM_HAS_CHARACTER_CONVERSION_WARNING}>:-Wno-character-conversion>)
-  target_include_directories(${PROJECT_NAME} PUBLIC ${OMIM_ROOT}/3party/glm)
 endif()
+# drape_tests compiles drape's sources directly (DRAPE_TESTABLE_SRC), so the
+# glm include path must be added here regardless of the 3party mode.
+target_include_directories(${PROJECT_NAME} PUBLIC ${OMIM_ROOT}/3party/glm)
 
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
