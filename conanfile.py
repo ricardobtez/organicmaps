@@ -24,9 +24,9 @@ class OrganicMapsDeps(ConanFile):
     }
 
     def requirements(self):
-        self.requires("icu/74.1")
+        self.requires("icu/78.2")
         self.requires("freetype/2.13.2")
-        self.requires("harfbuzz/8.3.0")
+        self.requires("harfbuzz/11.4.1")
         self.requires("gflags/2.2.2")
         self.requires("fast_float/8.2.10")
         self.requires("vulkan-headers/1.4.357.0")
