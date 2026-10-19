@@ -215,6 +215,7 @@ if (WITH_SYSTEM_PROVIDED_3PARTY)
 
   find_package(pugixml REQUIRED)
   find_package(utf8cpp REQUIRED)
+  find_package(FastFloat CONFIG REQUIRED)
   find_package(Boost REQUIRED)
   if (BUILD_TESTING)
     find_package(GTest REQUIRED)

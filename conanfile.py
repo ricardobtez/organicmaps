@@ -28,6 +28,7 @@ class OrganicMapsDeps(ConanFile):
         self.requires("freetype/2.13.2")
         self.requires("harfbuzz/8.3.0")
         self.requires("gflags/2.2.2")
+        self.requires("fast_float/8.2.10")
         self.requires("expat/2.6.3")
         self.requires("pugixml/1.14")
         self.requires("utfcpp/4.0.5")
